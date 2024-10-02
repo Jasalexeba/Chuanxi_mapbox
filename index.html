@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Western Sichuan</title>
+    <!-- 引入 Mapbox 的 CSS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.css" rel="stylesheet">
+    <style>
+        /* 设置地图容器的样式 */
+        #map {
+            width: 100%;
+            height: 700px;  /* 高度可根据需要调整 */
+        }
+    </style>
+</head>
+<body>
+    <!-- 地图的 HTML 容器 -->
+    <div id="map"></div>
+
+    <!-- 引入 Mapbox 的 JavaScript -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        // 设置 Mapbox Access Token
+        mapboxgl.accessToken = 'pk.eyJ1IjoiemljaGVuZ2d1byIsImEiOiJjbTFxem1xcTgwNW1yMmpzNm1zcmZwczhzIn0.UQ8hP1qwc4tWtnFDx1_7-A';
+        
+        // 初始化地图
+        const map = new mapboxgl.Map({
+            container: 'map',  // HTML 中地图容器的 ID
+            style: 'mapbox://styles/zichengguo/cm1r0sn9g00po01qrc8dd05er',  // 使用你在 Studio 中创建的样式
+            center: [104.0668, 30.5728],  // 设置地图的中心位置（例如成都）
+            zoom: 10  // 初始缩放级别
+        });
+
+        // 使用 PapaParse 解析 CSV 文件
+        Papa.parse('location_des.csv', {
+             download: true,
+             header: true,
+             complete: function(results) {
+                 // 处理 CSV 数据
+                 results.data.forEach((location) => {
+                     // 使用 CSV 中的经纬度创建标记
+                     const markerDiv = document.createElement('div');
+                     markerDiv.className = 'marker';
+                     markerDiv.innerText = location.地点;
+                     const marker = new mapboxgl.Marker()
+                         .setLngLat([location.latitude, location.longitude])
+                         .addTo(map);
+
+                      // 创建弹出窗口并绑定到标记
+                     const popup = new mapboxgl.Popup({ offset: 25 })
+                         .setText(`${location.地点}，这里可以${location.活动},`);
+
+                     marker.setPopup(popup);
+                 });
+            }
+        });
+        // 动态调整标记的大小
+        map.on('zoom', () => {
+            const zoomLevel = map.getZoom();
+            const newFontSize = zoomLevel * 1.5; // 调整字体大小的公式
+            const markers = document.getElementsByClassName('marker');
+
+            // 遍历所有标记，更新字体大小
+            for (let i = 0; i < markers.length; i++) {
+                markers[i].style.fontSize = `${newFontSize}px`;
+            }
+        });
+    </script>
+
+
+</body>
+</html>
